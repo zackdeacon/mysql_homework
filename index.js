@@ -99,13 +99,43 @@ var connection = mysql.createConnection({
             type: "input",
             message: "What is the last name of the employee that you would like to add?",
             name: "empLName"
+        },
+        {
+            type: "list",
+            message:"What department does this employee work in?",
+            choices: ["Sales", "Operations", "Engineering", "Human resources"],
+            name: "empDepartment"
+        },
+        {
+            type: "list",
+            message:"What role does this employee have?",
+            choices: [],
+            name: "empRole"
         }
-    ]).then(function({ empFName, empLName }){
+    ]).then(function({ empFName, empLName, empDepartment, empRole }){
         console.log(empFName);
         console.log(empLName);
-    })
+        console.log(empDepartment);
+        console.log(empRole);
+        switch (empFName, empLName, empDepartment, empRole) {
+            case "Sales":
+               salesRoles();
+                break;
+            case "Operations":
+                operationsRoles();
+                break;
+            case "Engineering":
+                engineeringRoles();
+                break;
+            case "Human resources":
+                hrRoles();
+                break;
+
+            }
+        })
 
     }
+
 
     function viewDepartment() {
         var query = connection.query(
@@ -150,4 +180,55 @@ var connection = mysql.createConnection({
     function quit() {
         console.log("Goodbye!");
         connection.end
+    }
+
+    function salesRoles() {
+        inquirer.prompt([{
+            type: "list",
+            message:"What role does this employee have?",
+            choices: ["Lead Sales Manager", "Sales Exec"],
+            name: "empRole"
+        }]).then(function({ empRole }){
+            console.log(empRole);
+            //need to connection.query
+        })
+    }
+
+    function operationsRoles() {
+        inquirer.prompt([{
+            type: "list",
+            message:"What role does this employee have?",
+            choices: ["Director of Operations", "Assistant Director of Operations"],
+            name: "empRole"
+        }]).then(function({ empRole }){
+            console.log(empRole);
+                        //need to connection.query
+
+        })
+    }
+
+    function engineeringRoles() {
+        inquirer.prompt([{
+            type: "list",
+            message:"What role does this employee have?",
+            choices: ["Lead Developer", "Developer"],
+            name: "empRole"
+        }]).then(function({ empRole }){
+            console.log(empRole);
+                        //need to connection.query
+
+        })
+    }
+
+    function hrRoles() {
+        inquirer.prompt([{
+            type: "list",
+            message:"What role does this employee have?",
+            choices: ["HR Manager", "HR Lead"],
+            name: "empRole"
+        }]).then(function({ empRole }){
+            console.log(empRole);
+                        //need to connection.query
+
+        })
     }
