@@ -203,7 +203,7 @@ var connection = mysql.createConnection({
 
     function viewRole() {
         var query = connection.query(
-            "SELECT * FROM employeesDB.role",
+            "SELECT role.title, role.salary FROM employeesDB.role",
             function(err, res) {
               if (err) throw err;
               console.table(res);
@@ -215,7 +215,7 @@ var connection = mysql.createConnection({
 
     function viewEmployee() {
         var query = connection.query(
-            "SELECT * FROM employeesDB.employees",
+            "SELECT employees.id, employees.first_name, employees.last_name, role.title, role.salary, department.name FROM employees INNER JOIN role ON (role.id = employees.role_id) INNER JOIN department ON (department.id = role.department_id) ORDER BY id ASC",
             function(err, res) {
               if (err) throw err;
               console.table(res);
