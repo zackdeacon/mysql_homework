@@ -52,7 +52,8 @@ var connection = mysql.createConnection({
                     UpdateEmployeeRole();
                     break;
                 case "quit":
-                    quit();
+                    console.log("Goodbye!");
+                    connection.end();
                     break;
             }
         })
@@ -64,13 +65,28 @@ var connection = mysql.createConnection({
             message: "What is the name of the department that you would like to add?",
             name: "departmentName"
         }
-    ]).then(function({ departmentName }){
-            console.log(departmentName);
-            //need to add the new department to mysql
+    ]).then(function(answers){
+        connection.query(
+            "INSERT INTO department SET ?",
+            {
+              name: answers.departmentName
+            },
+            function(err, res) {
+              if (err) throw err;
+              console.log("Set has been insterted!");
+            }
+          );
+          begin()
         })
+        
     }
 
     function addRole() {
+        var query = connection.query(
+            "SELECT * FROM department",
+            
+            function(err, department) {
+              if (err) throw err;             
         inquirer.prompt([{
             type: "input",
             message: "What is the title of the role that you would like to add?",
@@ -80,16 +96,51 @@ var connection = mysql.createConnection({
             type: "input",
             message: "What is the annual salary for the role that you would like to add?",
             name: "roleSalary"
+        },
+        {
+            type: "list",
+            message:"Which department does this role belong to?",
+            choices: () => {
+                const departmentArr = [];
+                for (var i = 0; i < department.length; i++) {
+                    departmentArr.push(department[i].name);
+                }
+                return [...departmentArr]
+            },
+            name: "empRole"
         }
-    ]).then(function({ roleTitle, roleSalary }){
-        console.log(roleTitle);
-        console.log(roleSalary);
-        //need to add the new role to mysql
-
+    ]).then(function(answers){
+        let departmentID;
+        for (let i = 0; i < department.length; i++) {
+            if(department[i].name === answers.empRole){
+                departmentID=department[i].id;
+            }
+        }
+           connection.query(
+            "INSERT INTO role SET ?",
+            {
+              title: answers.roleTitle,
+              salary: answers.roleSalary,
+              department_id: departmentID
+            },
+            function(err, res) {
+              if (err) throw err;
+              console.log("Set has been insterted!");
+            }
+          );
+          begin()
     })
+})
     }
 
     function addEmployee() {
+                 var query = connection.query(
+                "SELECT * FROM role",
+                
+                function(err, roles) {
+                  if (err) throw err;             
+                    
+
         inquirer.prompt([{
             type: "input",
             message: "What is the first name of the employee that you would like to add?",
@@ -102,40 +153,41 @@ var connection = mysql.createConnection({
         },
         {
             type: "list",
-            message:"What department does this employee work in?",
-            choices: ["Sales", "Operations", "Engineering", "Human resources"],
-            name: "empDepartment"
-        },
-        {
-            type: "list",
-            message:"What role does this employee have?",
-            choices: [],
+            message:"What is this employees role?",
+            choices: () => {
+                const rolesArr = [];
+                for (var i = 0; i < roles.length; i++) {
+                    rolesArr.push(roles[i].title);
+                }
+                return [...rolesArr]
+            },
             name: "empRole"
         }
-    ]).then(function({ empFName, empLName, empDepartment, empRole }){
-        console.log(empFName);
-        console.log(empLName);
-        console.log(empDepartment);
-        console.log(empRole);
-        switch (empFName, empLName, empDepartment, empRole) {
-            case "Sales":
-               salesRoles();
-                break;
-            case "Operations":
-                operationsRoles();
-                break;
-            case "Engineering":
-                engineeringRoles();
-                break;
-            case "Human resources":
-                hrRoles();
-                break;
-
+        
+    ]).then(function(answers){
+        let role;
+        for (let i = 0; i < roles.length; i++) {
+            if(roles[i].title === answers.empRole){
+                role=roles[i].id;
             }
-        })
-
-    }
-
+        }
+           connection.query(
+            "INSERT INTO employees SET ?",
+            {
+              first_name: answers.empFName,
+              last_name: answers.empLName,
+              role_id: role
+            },
+            function(err, res) {
+              if (err) throw err;
+              console.log("Set has been insterted!");
+            }
+          );
+          begin()
+    })         
+})
+  
+}
 
     function viewDepartment() {
         var query = connection.query(
@@ -174,61 +226,61 @@ var connection = mysql.createConnection({
     }
 
     function UpdateEmployeeRole() {
+            var query = connection.query(
+                "SELECT * FROM employees",
+            
+                function(err, employees) {
+                if (err) throw err; 
+            var query = connection.query(
+                "SELECT * FROM role",
+                    
+                function(err, roles) {
+                    if (err) throw err; 
 
-    }
-
-    function quit() {
-        console.log("Goodbye!");
-        connection.end
-    }
-
-    function salesRoles() {
-        inquirer.prompt([{
-            type: "list",
-            message:"What role does this employee have?",
-            choices: ["Lead Sales Manager", "Sales Exec"],
-            name: "empRole"
-        }]).then(function({ empRole }){
-            console.log(empRole);
-            //need to connection.query
+            inquirer.prompt([{
+                type: "list",
+                message:"Which employee would you like to update?",
+                choices: () => {
+                    const employeesArr = [];
+                    for (var i = 0; i < employees.length; i++) {
+                        employeesArr.push(employees[i].first_name + " " + employees[i].last_name);
+                    }
+                    return employeesArr
+                },
+                name: "empName"
+            },
+            {
+                type: "list",
+                message:`Which role would you like to give them?`,
+                choices: () => {
+                    const rolesArr = [];
+                    for (var i = 0; i < roles.length; i++) {
+                        rolesArr.push(roles[i].title);
+                    }
+                    return rolesArr
+                },
+                name: "empRole"
+            }
+        ]).then(function(answers){
+            let Role;
+            for (var i = 0; i < roles.length; i++) {
+                if (roles[i].title === answers.empRole) {
+                    Role = roles[i].id;
+                }
+            }
+            var empID;
+            for (var i = 0; i < employees.length; i++) {
+                if ((employees[i].first_name + " " + employees[i].last_name) === answers.empName) {
+                    empID = employees[i].id;
+                }
+            }
+            connection.query("UPDATE employees SET ? WHERE ?", [{ role_id: Role }, { id: empID}], function (err) {
+                if (err) throw err
+            })
+            begin();
         })
-    }
-
-    function operationsRoles() {
-        inquirer.prompt([{
-            type: "list",
-            message:"What role does this employee have?",
-            choices: ["Director of Operations", "Assistant Director of Operations"],
-            name: "empRole"
-        }]).then(function({ empRole }){
-            console.log(empRole);
-                        //need to connection.query
-
+         
         })
+     })         
     }
 
-    function engineeringRoles() {
-        inquirer.prompt([{
-            type: "list",
-            message:"What role does this employee have?",
-            choices: ["Lead Developer", "Developer"],
-            name: "empRole"
-        }]).then(function({ empRole }){
-            console.log(empRole);
-                        //need to connection.query
-
-        })
-    }
-
-    function hrRoles() {
-        inquirer.prompt([{
-            type: "list",
-            message:"What role does this employee have?",
-            choices: ["HR Manager", "HR Lead"],
-            name: "empRole"
-        }]).then(function({ empRole }){
-            console.log(empRole);
-                        //need to connection.query
-
-        })
-    }
